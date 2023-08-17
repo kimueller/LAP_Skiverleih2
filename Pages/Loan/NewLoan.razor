@@ -1,0 +1,75 @@
+﻿@page "/loans/new"
+@using LAP_Skiverleih.Models
+@using LAP_Skiverleih.Services.Interfaces
+@inject ILoanService loanService
+@inject ICustomerService customerService
+@inject IArticleService articleService
+@inject NavigationManager navMan
+
+<PageTitle>New loan</PageTitle>
+
+<h1>New loan</h1>
+
+
+<EditForm Model="@loan" OnValidSubmit="Submit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="form-group">
+        <label for="article">Article</label>
+                <ValidationMessage For="@(() => loan.ArticleID)" />
+        <InputSelect @bind-Value="@loan.ArticleID" class="form-control">
+            @foreach(var article in articles)
+            {
+                <option value="@article.ArticleID">@article.Title</option>
+            }
+        </InputSelect>
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="customer">Customer</label>
+        <ValidationMessage For="@(() => loan.CustomerID)" />
+        <InputSelect @bind-Value="@loan.CustomerID" class="form-control">
+            @foreach (var customer in customers)
+            {
+                <option value="@customer.CustomerID">@customer.LastName @customer.FirstName</option>
+            }
+        </InputSelect>
+    </div>
+    <br />
+
+    <div class="form-group">
+        <label for="customer">Customer</label>
+            <ValidationMessage For="@(() => loan.LoanDate)" />
+        <InputDate @bind-Value="@loan.LoanDate" class="form-control"></InputDate>
+    </div>
+
+    <br />
+
+    <button class="btn btn-success">CREATE</button>
+</EditForm>
+
+@code {
+    Loan loan = new Loan();
+
+    List<Customer> customers = new();
+    List<Article> articles = new();
+    private DateTime currentDate;
+
+    protected override void OnInitialized()
+    {
+        customers = customerService.GetCustomers();
+        articles = articleService.GetNotLoanedArticles();
+        loan.LoanDate = DateTime.Now.Date;
+    }
+
+    private void Submit()
+    {
+        loan.ReturnDate = null;
+        var article = articles.First(a => a.ArticleID == loan.ArticleID);
+        //var article = articles.Where(a => a.ArticleID == loan.ArticleID).FirstOrDefault();
+        article.LoanedOut = true;
+        article.LoanCount++;
+        loanService.CreateLoan(loan);
+        navMan.NavigateTo("/loans", true);
+    }
+
+}

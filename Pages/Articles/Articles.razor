@@ -1,0 +1,72 @@
+﻿@page "/articles"
+@using LAP_Skiverleih.Models
+@using LAP_Skiverleih.Services.Interfaces
+@inject IArticleService articleService
+@inject NavigationManager navMan
+
+<PageTitle>Articles</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Articles</h1>
+
+        <h3>New article: <button class="btn btn-success" @onclick="() => NavToNewArticle()">+</button></h3>
+
+        @if (articles == null)
+        {
+            <p><em>No articles!</em></p>
+        }
+        else
+        {
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price per day</th>
+                        <th>Amount of loans</th>
+                        <th>Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var article in articles)
+                    {
+                        <tr>
+                            <td>@article.Title</td>
+                            <td>@article.Category.CategoryName</td>
+                            <td>@article.PricePerDay€</td>
+                            <td>@article.LoanCount</td>
+                            @if (article.LoanedOut == false)
+                            {
+                                <td style="color:green">✔</td>
+                            }
+                            else
+                            {
+                                <td style="color:red">❌</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <h1>Access denied!</h1>
+        <h4>You have to be logged in to view this page!</h4>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private List<Article> articles;
+
+    protected override void OnInitialized()
+    {
+        articles = articleService.GetArticles();
+    }
+
+    private void NavToNewArticle()
+    {
+        navMan.NavigateTo("/articles/new", true);
+    }
+}

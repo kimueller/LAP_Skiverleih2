@@ -1,0 +1,62 @@
+﻿@page "/articles/new"
+@using LAP_Skiverleih.Models
+@using LAP_Skiverleih.Services.Interfaces
+@inject IArticleService articleService
+@inject ICategorySerivce categoryService
+@inject NavigationManager navMan
+
+<PageTitle>New article</PageTitle>
+
+
+<h1>New article</h1>
+
+
+<EditForm Model="@article" OnValidSubmit="Submit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="form-group">
+        <label for="article">Article name</label>
+                <ValidationMessage For="@(() => article.Title)" />
+        <InputText @bind-Value="@article.Title" placeholder="Name..." class="form-control"> </InputText>
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="category">Category</label>
+        <ValidationMessage For="@(() => article.CategoryID)" />
+        <InputSelect @bind-Value="@article.CategoryID" class="form-control">
+            @foreach (var category in categories)
+            {
+                <option value="@category.CategoryID">@category.CategoryName</option>
+            }
+        </InputSelect>
+    </div>
+
+    <br />
+    <div class="form-group">
+        <label for="price">Price per day (€)</label>
+        <ValidationMessage For="@(() => article.CategoryID)" />
+        <InputNumber @bind-Value="@article.PricePerDay" class="form-control"></InputNumber>
+    </div>
+    <br />
+
+    <button class="btn btn-success">CREATE</button>
+</EditForm>
+
+
+@code {
+    Article article = new Article();
+    List<Category> categories = new();
+
+    protected override void OnInitialized()
+    {
+        categories = categoryService.GetCategories();
+    }
+
+    private void Submit()
+    {
+        article.LoanedOut = false;
+        article.LoanCount = 0;
+        articleService.CreateArticle(article);
+        navMan.NavigateTo("/articles", true);
+    }
+
+}
